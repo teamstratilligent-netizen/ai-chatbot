@@ -20,27 +20,44 @@ st.set_page_config(
 st.markdown("""
 <style>
 
-/* Background color */
+/* GLOBAL BACKGROUND */
 body {
-    background-color: #212121 !important;    /* DARK background */
+    background-color: #212121 !important;
     font-family: "Inter", sans-serif;
 }
 
+/* Streamlit main container */
 .block-container {
     padding-top: 3rem !important;
 }
 
-/* Chat wrapper */
+/* -------- MOBILE FIX FOR HEADER CUT-OFF ---------- */
+@media (max-width: 768px) {
+    .block-container {
+        padding-top: 5.5rem !important;  /* Extra top space on small screens */
+    }
+
+    .header-title {
+        font-size: 30px !important;
+        margin-top: 12px !important;
+    }
+
+    .sub-title {
+        font-size: 16px !important;
+    }
+}
+
+/* CHAT MESSAGE WRAPPER */
 .chat-message {
     display: flex;
     margin: 14px 0;
 }
 
-/* USER bubble */
+/* USER BUBBLE */
 .user-bubble {
     margin-left: auto;
-    background: #303030;         /* BUBBLE COLOR */
-    color: white;                /* TEXT COLOR */
+    background: #303030;
+    color: white;
     padding: 14px 18px;
     border-radius: 16px 16px 4px 16px;
     max-width: 75%;
@@ -49,11 +66,11 @@ body {
     box-shadow: 0 1px 4px rgba(0,0,0,0.35);
 }
 
-/* ASSISTANT bubble */
+/* ASSISTANT BUBBLE */
 .bot-bubble {
     margin-right: auto;
-    background: #303030;          /* BUBBLE COLOR */
-    color: white;                 /* TEXT COLOR */
+    background: #303030;
+    color: white;
     padding: 14px 18px;
     border-radius: 16px 16px 16px 4px;
     max-width: 75%;
@@ -62,7 +79,7 @@ body {
     box-shadow: 0 1px 4px rgba(0,0,0,0.35);
 }
 
-/* Header */
+/* HEADER TEXT */
 .header-title {
     font-size: 36px;
     font-weight: 700;
@@ -76,18 +93,9 @@ body {
     margin-bottom: 25px;
 }
 
-/* ------------------------------
-   MOBILE FIX: CHAT INPUT TEXT VISIBLE
------------------------------- */
-@media (max-width: 768px) {
-    .stChatInput textarea {
-        color: black !important;                   /* Visible text */
-        background-color: white !important;        /* White input box */
-    }
-
-    .stChatInput textarea::placeholder {
-        color: #555 !important;                    /* Visible placeholder */
-    }
+/* CHAT INPUT VISIBILITY FIX FOR DARK MODE */
+.stChatInput input {
+    color: white !important;
 }
 
 </style>
@@ -100,20 +108,17 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # -------------------------------
-# HEADER TEXT
+# HEADER
 # -------------------------------
-st.markdown("<div class='header-title'>🌄 Welcome to Jharkhand Tourism</div>", unsafe_allow_html=True)
+st.markdown("<div class='header-title'>🌄 Welcome to Jharkhand</div>", unsafe_allow_html=True)
 st.markdown("<div class='sub-title'>Your personal guide to the land of forests, waterfalls, heritage & adventure.</div>", unsafe_allow_html=True)
 st.divider()
 
 # -------------------------------
-# RENDER CHAT
+# MESSAGE RENDERING
 # -------------------------------
 def render_chat(role, content):
-    if role == "user":
-        bubble_class = "user-bubble"
-    else:
-        bubble_class = "bot-bubble"
+    bubble_class = "user-bubble" if role == "user" else "bot-bubble"
 
     st.markdown(
         f"""
@@ -127,7 +132,7 @@ def render_chat(role, content):
     )
 
 # -------------------------------
-# DISPLAY HISTORY
+# DISPLAY CHAT HISTORY
 # -------------------------------
 for msg in st.session_state.messages:
     render_chat(msg["role"], msg["content"])
@@ -141,9 +146,6 @@ if prompt:
     st.session_state.messages.append({"role": "user", "content": prompt})
     render_chat("user", prompt)
 
-    # -------------------------------
-    # CALL BACKEND API
-    # -------------------------------
     with st.spinner("Exploring Jharkhand for you..."):
         try:
             payload = {

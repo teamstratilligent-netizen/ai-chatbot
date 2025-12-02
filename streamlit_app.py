@@ -15,45 +15,35 @@ st.set_page_config(
 )
 
 # -------------------------------
-# PROFESSIONAL UI CSS (UPDATED COLORS)
+# FIXED CSS — MOBILE HEADER NOW VISIBLE
 # -------------------------------
 st.markdown("""
 <style>
 
-/* GLOBAL BACKGROUND */
-body {
+/* Ensure full dark background everywhere */
+html, body, .stApp, .block-container, .appview-container, .main, .st-emotion-cache-1jicfl2 {
     background-color: #212121 !important;
-    font-family: "Inter", sans-serif;
 }
 
-/* Streamlit main container */
-.block-container {
-    padding-top: 3rem !important;
+/* Fix header area being white on mobile */
+header, .st-emotion-cache-18ni7ap, .st-emotion-cache-1dp5vir {
+    background-color: #212121 !important;
 }
 
-/* -------- MOBILE FIX FOR HEADER CUT-OFF ---------- */
+/* Extra padding for mobile so header is not cut */
 @media (max-width: 768px) {
     .block-container {
-        padding-top: 5.5rem !important;  /* Extra top space on small screens */
-    }
-
-    .header-title {
-        font-size: 30px !important;
-        margin-top: 12px !important;
-    }
-
-    .sub-title {
-        font-size: 16px !important;
+        padding-top: 5rem !important;
     }
 }
 
-/* CHAT MESSAGE WRAPPER */
+/* Chat wrapper */
 .chat-message {
     display: flex;
     margin: 14px 0;
 }
 
-/* USER BUBBLE */
+/* USER bubble */
 .user-bubble {
     margin-left: auto;
     background: #303030;
@@ -66,7 +56,7 @@ body {
     box-shadow: 0 1px 4px rgba(0,0,0,0.35);
 }
 
-/* ASSISTANT BUBBLE */
+/* BOT bubble */
 .bot-bubble {
     margin-right: auto;
     background: #303030;
@@ -79,7 +69,7 @@ body {
     box-shadow: 0 1px 4px rgba(0,0,0,0.35);
 }
 
-/* HEADER TEXT */
+/* Header text */
 .header-title {
     font-size: 36px;
     font-weight: 700;
@@ -93,11 +83,12 @@ body {
     margin-bottom: 25px;
 }
 
-/* CHAT INPUT VISIBILITY FIX FOR DARK MODE */
+/* Chat input text color */
 .stChatInput input {
     color: white !important;
 }
 
+/* Chat input background remains white */
 </style>
 """, unsafe_allow_html=True)
 
@@ -115,11 +106,10 @@ st.markdown("<div class='sub-title'>Your personal guide to the land of forests, 
 st.divider()
 
 # -------------------------------
-# MESSAGE RENDERING
+# RENDER CHAT
 # -------------------------------
 def render_chat(role, content):
     bubble_class = "user-bubble" if role == "user" else "bot-bubble"
-
     st.markdown(
         f"""
         <div class="chat-message">
@@ -132,7 +122,7 @@ def render_chat(role, content):
     )
 
 # -------------------------------
-# DISPLAY CHAT HISTORY
+# DISPLAY HISTORY
 # -------------------------------
 for msg in st.session_state.messages:
     render_chat(msg["role"], msg["content"])

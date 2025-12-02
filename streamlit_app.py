@@ -15,63 +15,79 @@ st.set_page_config(
 )
 
 # -------------------------------
-# PROFESSIONAL UI CSS (Dark Mode)
+# PROFESSIONAL UI CSS (UPDATED COLORS)
 # -------------------------------
 st.markdown("""
 <style>
 
-/* FULL PAGE DARK BACKGROUND (Desktop + Mobile) */
-html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"], .main {
-    background-color: #212121 !important;
-    color: white !important;
+/* Background color */
+body {
+    background-color: #212121 !important;    /* DARK background */
+    font-family: "Inter", sans-serif;
 }
 
-/* Ensure header text is white */
-.header-title, .sub-title {
-    color: white !important;
+.block-container {
+    padding-top: 3rem !important;
 }
 
 /* Chat wrapper */
 .chat-message {
     display: flex;
-    margin: 12px 0;
+    margin: 14px 0;
 }
 
 /* USER bubble */
 .user-bubble {
     margin-left: auto;
-    background: #303030 !important;
-    color: white !important;
-    padding: 12px 16px;
+    background: #303030;         /* BUBBLE COLOR */
+    color: white;                /* TEXT COLOR */
+    padding: 14px 18px;
     border-radius: 16px 16px 4px 16px;
     max-width: 75%;
     font-size: 16px;
     line-height: 1.55;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.35);
 }
 
 /* ASSISTANT bubble */
 .bot-bubble {
     margin-right: auto;
-    background: #303030 !important;
-    color: white !important;
-    padding: 12px 16px;
+    background: #303030;          /* BUBBLE COLOR */
+    color: white;                 /* TEXT COLOR */
+    padding: 14px 18px;
     border-radius: 16px 16px 16px 4px;
     max-width: 75%;
     font-size: 16px;
     line-height: 1.55;
-    border: 1px solid #3a3a3a;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.8);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.35);
 }
 
-/* Chat input text color fix */
-input, textarea {
-    color: white !important;
+/* Header */
+.header-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: -8px;
 }
 
-/* Streamlit chat input background fix */
-[data-testid="stChatInput"] {
-    background-color: #212121 !important;
+.sub-title {
+    color: #bdbdbd;
+    font-size: 18px;
+    margin-bottom: 25px;
+}
+
+/* ------------------------------
+   MOBILE FIX: CHAT INPUT TEXT VISIBLE
+------------------------------ */
+@media (max-width: 768px) {
+    .stChatInput textarea {
+        color: black !important;                   /* Visible text */
+        background-color: white !important;        /* White input box */
+    }
+
+    .stChatInput textarea::placeholder {
+        color: #555 !important;                    /* Visible placeholder */
+    }
 }
 
 </style>
@@ -84,17 +100,20 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # -------------------------------
-# HEADER
+# HEADER TEXT
 # -------------------------------
 st.markdown("<div class='header-title'>🌄 Welcome to Jharkhand Tourism</div>", unsafe_allow_html=True)
 st.markdown("<div class='sub-title'>Your personal guide to the land of forests, waterfalls, heritage & adventure.</div>", unsafe_allow_html=True)
 st.divider()
 
 # -------------------------------
-# RENDER CHAT BUBBLES
+# RENDER CHAT
 # -------------------------------
 def render_chat(role, content):
-    bubble_class = "user-bubble" if role == "user" else "bot-bubble"
+    if role == "user":
+        bubble_class = "user-bubble"
+    else:
+        bubble_class = "bot-bubble"
 
     st.markdown(
         f"""
@@ -108,7 +127,7 @@ def render_chat(role, content):
     )
 
 # -------------------------------
-# DISPLAY CHAT HISTORY
+# DISPLAY HISTORY
 # -------------------------------
 for msg in st.session_state.messages:
     render_chat(msg["role"], msg["content"])
@@ -116,15 +135,14 @@ for msg in st.session_state.messages:
 # -------------------------------
 # USER INPUT
 # -------------------------------
-prompt = st.chat_input("Ask about places, culture, food, or travel in Jharkhand...")
+prompt = st.chat_input("Ask about places, culture, or travel in Jharkhand...")
 
 if prompt:
-    # Save + display user message
     st.session_state.messages.append({"role": "user", "content": prompt})
     render_chat("user", prompt)
 
     # -------------------------------
-    # CALL API
+    # CALL BACKEND API
     # -------------------------------
     with st.spinner("Exploring Jharkhand for you..."):
         try:
@@ -138,16 +156,14 @@ if prompt:
 
             if resp.status_code == 200:
                 data = resp.json()
-                reply = data.get("response", "No response received.")
+                reply = data.get("response", "No response.")
 
-                # Add execution time
                 if data.get("execution_time_ms"):
                     reply += f"\n\n⏱️ {data['execution_time_ms']:.2f} ms"
 
                 st.session_state.messages.append({"role": "assistant", "content": reply})
                 render_chat("assistant", reply)
 
-                # Render table if available
                 if data.get("dataframe"):
                     df = pd.DataFrame(json.loads(data["dataframe"]))
                     st.write("### 📊 Additional Info")

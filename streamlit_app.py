@@ -110,7 +110,7 @@ if "messages" not in st.session_state:
 # -------------------------------
 # HEADER
 # -------------------------------
-st.markdown("<div class='header-title'>🌄 Welcome to Jharkhand</div>", unsafe_allow_html=True)
+st.markdown("<div class='header-title'>🌄 Welcome to Jharkhand Tourism</div>", unsafe_allow_html=True)
 st.markdown("<div class='sub-title'>Your personal guide to the land of forests, waterfalls, heritage & adventure.</div>", unsafe_allow_html=True)
 st.divider()
 

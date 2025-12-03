@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as st 
 import requests
 import pandas as pd
 import json
@@ -41,8 +41,58 @@ header { background-color: #212121 !important; }
     border-radius: 16px 16px 16px 4px;
     max-width: 75%;
 }
+
+/* Header styles */
+.header-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: -8px;
+}
+
+.sub-title {
+    color: #bdbdbd;
+    font-size: 18px;
+    margin-bottom: 25px;
+}
+
+            /* --- FIX: Make header visible on mobile --- */
+@media (max-width: 768px) {
+
+    /* Remove Streamlit's default top padding */
+    .block-container {
+        padding-top: 40px !important;
+    }
+
+    /* Force header to be visible */
+    .header-title, .sub-title {
+        position: relative !important;
+        z-index: 9999 !important;
+        padding-top: 20px !important;
+        display: block !important;
+        visibility: visible !important;
+    }
+
+    /* Remove clipping caused by Streamlit mobile bar */
+    header[data-testid="stHeader"] {
+        position: relative !important;
+        top: 0 !important;
+        z-index: 10000 !important;
+        height: auto !important;
+        padding-top: 10px !important;
+    }
+}
+            
 </style>
 """, unsafe_allow_html=True)
+
+# -------------------------------
+# HEADER  ✅ (Added exactly as requested)
+# -------------------------------
+st.markdown("<div class='header-title'>🌄 Welcome to Jharkhand Tourism</div>", unsafe_allow_html=True)
+st.markdown("<div class='sub-title'>Your personal guide to the land of forests, waterfalls, heritage & adventure.</div>", unsafe_allow_html=True)
+st.divider()
+
 
 # -------------------------------
 # SESSION STATE

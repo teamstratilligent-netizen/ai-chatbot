@@ -177,7 +177,7 @@ if user_input:
 
         bot_msg = (
             "Thank you! You're all set. 🙌\n\n"
-            "You can now ask me anything!"
+            "You can now ask me anything about Jharkhand tourism!"
         )
         st.session_state.messages.append({"role": "assistant", "content": bot_msg})
         render_chat("assistant", bot_msg)

@@ -15,35 +15,16 @@ st.set_page_config(
 )
 
 # -------------------------------
-# FIXED CSS — MOBILE HEADER NOW VISIBLE
+# FIXED CSS
 # -------------------------------
 st.markdown("""
 <style>
-
-/* Ensure full dark background everywhere */
-html, body, .stApp, .block-container, .appview-container, .main, .st-emotion-cache-1jicfl2 {
+html, body, .stApp, .block-container, .appview-container, .main {
     background-color: #212121 !important;
 }
+header { background-color: #212121 !important; }
 
-/* Fix header area being white on mobile */
-header, .st-emotion-cache-18ni7ap, .st-emotion-cache-1dp5vir {
-    background-color: #212121 !important;
-}
-
-/* Extra padding for mobile so header is not cut */
-@media (max-width: 768px) {
-    .block-container {
-        padding-top: 5rem !important;
-    }
-}
-
-/* Chat wrapper */
-.chat-message {
-    display: flex;
-    margin: 14px 0;
-}
-
-/* USER bubble */
+.chat-message { display: flex; margin: 14px 0; }
 .user-bubble {
     margin-left: auto;
     background: #303030;
@@ -51,12 +32,7 @@ header, .st-emotion-cache-18ni7ap, .st-emotion-cache-1dp5vir {
     padding: 14px 18px;
     border-radius: 16px 16px 4px 16px;
     max-width: 75%;
-    font-size: 16px;
-    line-height: 1.55;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.35);
 }
-
-/* BOT bubble */
 .bot-bubble {
     margin-right: auto;
     background: #303030;
@@ -64,31 +40,7 @@ header, .st-emotion-cache-18ni7ap, .st-emotion-cache-1dp5vir {
     padding: 14px 18px;
     border-radius: 16px 16px 16px 4px;
     max-width: 75%;
-    font-size: 16px;
-    line-height: 1.55;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.35);
 }
-
-/* Header text */
-.header-title {
-    font-size: 36px;
-    font-weight: 700;
-    color: white;
-    margin-bottom: -8px;
-}
-
-.sub-title {
-    color: #bdbdbd;
-    font-size: 18px;
-    margin-bottom: 25px;
-}
-
-/* Chat input text color */
-.stChatInput input {
-    color: white !important;
-}
-
-/* Chat input background remains white */
 </style>
 """, unsafe_allow_html=True)
 
@@ -98,22 +50,25 @@ header, .st-emotion-cache-18ni7ap, .st-emotion-cache-1dp5vir {
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# -------------------------------
-# HEADER
-# -------------------------------
-st.markdown("<div class='header-title'>🌄 Welcome to Jharkhand Tourism</div>", unsafe_allow_html=True)
-st.markdown("<div class='sub-title'>Your personal guide to the land of forests, waterfalls, heritage & adventure.</div>", unsafe_allow_html=True)
-st.divider()
+if "step" not in st.session_state:
+    st.session_state.step = "ask_name"  # ask_name → ask_phone → chat
+
+if "user_name" not in st.session_state:
+    st.session_state.user_name = None
+
+if "user_phone" not in st.session_state:
+    st.session_state.user_phone = None
+
 
 # -------------------------------
 # RENDER CHAT
 # -------------------------------
 def render_chat(role, content):
-    bubble_class = "user-bubble" if role == "user" else "bot-bubble"
+    bubble = "user-bubble" if role == "user" else "bot-bubble"
     st.markdown(
         f"""
         <div class="chat-message">
-            <div class="{bubble_class}">
+            <div class="{bubble}">
                 {content}
             </div>
         </div>
@@ -121,52 +76,107 @@ def render_chat(role, content):
         unsafe_allow_html=True
     )
 
+
 # -------------------------------
-# DISPLAY HISTORY
+# DISPLAY CHAT HISTORY
 # -------------------------------
 for msg in st.session_state.messages:
     render_chat(msg["role"], msg["content"])
 
+
+# -------------------------------
+# ONBOARDING BOT MESSAGES
+# -------------------------------
+if st.session_state.step == "ask_name" and len(st.session_state.messages) == 0:
+    bot_msg = "Hi! 👋 Welcome to the Tourism Guide Assist. May I know your name?"
+    st.session_state.messages.append({"role": "assistant", "content": bot_msg})
+    render_chat("assistant", bot_msg)
+
+
 # -------------------------------
 # USER INPUT
 # -------------------------------
-prompt = st.chat_input("Ask about places, culture, or travel in Jharkhand...")
+user_input = st.chat_input("Type your message here...")
 
-if prompt:
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    render_chat("user", prompt)
+if user_input:
+    # show user message
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    render_chat("user", user_input)
 
-    with st.spinner("Exploring Jharkhand for you..."):
-        try:
-            payload = {
-                "user_query": prompt,
-                "user_id": "visitor",
-                "session_id": "tourism-session-01"
-            }
+    # -------------------------------
+    # STEP 1 — USER PROVIDES NAME
+    # -------------------------------
+    if st.session_state.step == "ask_name":
+        st.session_state.user_name = user_input.strip()
 
-            resp = requests.post(f"{API_BASE_URL}/query", json=payload, timeout=60)
+        bot_msg = (
+            f"Nice to meet you, {st.session_state.user_name}! 😊 "
+            f"Please share your phone number so I can assist you further."
+        )
+        st.session_state.messages.append({"role": "assistant", "content": bot_msg})
+        render_chat("assistant", bot_msg)
 
-            if resp.status_code == 200:
-                data = resp.json()
-                reply = data.get("response", "No response.")
+        st.session_state.step = "ask_phone"
+        st.stop()
 
-                if data.get("execution_time_ms"):
-                    reply += f"\n\n⏱️ {data['execution_time_ms']:.2f} ms"
+    # -------------------------------
+    # STEP 2 — USER PROVIDES PHONE
+    # -------------------------------
+    if st.session_state.step == "ask_phone":
+        st.session_state.user_phone = user_input.strip()
 
-                st.session_state.messages.append({"role": "assistant", "content": reply})
-                render_chat("assistant", reply)
+        bot_msg = (
+            "Thank you! You're all set. 🙌\n\n"
+            "You can now ask me anything!"
+        )
+        st.session_state.messages.append({"role": "assistant", "content": bot_msg})
+        render_chat("assistant", bot_msg)
 
-                if data.get("dataframe"):
-                    df = pd.DataFrame(json.loads(data["dataframe"]))
-                    st.write("### 📊 Additional Info")
-                    st.dataframe(df, use_container_width=True)
+        st.session_state.step = "chat"
+        st.stop()
 
-            else:
-                error = f"❌ Server Error {resp.status_code}"
-                st.session_state.messages.append({"role": "assistant", "content": error})
+    # -------------------------------
+    # STEP 3 — NORMAL CHAT MODE
+    # -------------------------------
+    if st.session_state.step == "chat":
+        with st.spinner("Exploring Jharkhand for you..."):
+            try:
+                payload = {
+                    "user_query": user_input,
+                    "user_id": st.session_state.user_name,
+                    "phone": st.session_state.user_phone,
+                    "session_id": "tourism-session-01",
+                }
+
+                resp = requests.post(f"{API_BASE_URL}/query", json=payload, timeout=60)
+
+                if resp.status_code == 200:
+                    data = resp.json()
+                    reply = data.get("response", "No response.")
+
+                    if data.get("execution_time_ms"):
+                        reply += f"\n\n⏱️ {data['execution_time_ms']:.2f} ms"
+
+                    st.session_state.messages.append(
+                        {"role": "assistant", "content": reply}
+                    )
+                    render_chat("assistant", reply)
+
+                    if data.get("dataframe"):
+                        df = pd.DataFrame(json.loads(data["dataframe"]))
+                        st.write("### 📊 Additional Info")
+                        st.dataframe(df, use_container_width=True)
+
+                else:
+                    error = f"❌ Server Error {resp.status_code}"
+                    st.session_state.messages.append(
+                        {"role": "assistant", "content": error}
+                    )
+                    render_chat("assistant", error)
+
+            except Exception as e:
+                error = f"⚠️ Unable to reach server: {str(e)}"
+                st.session_state.messages.append(
+                    {"role": "assistant", "content": error}
+                )
                 render_chat("assistant", error)
-
-        except Exception as e:
-            error = f"⚠️ Unable to reach server: {str(e)}"
-            st.session_state.messages.append({"role": "assistant", "content": error})
-            render_chat("assistant", error)
